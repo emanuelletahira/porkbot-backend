@@ -6,6 +6,25 @@ const genAI = new GoogleGenerativeAI(
 
 export default async function handler(req, res) {
 
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, OPTIONS"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
 
     const { pergunta } = req.body;
@@ -14,27 +33,12 @@ export default async function handler(req, res) {
       model: "gemini-2.5-flash"
     });
 
-    const contexto = `
-Você é o PorkBot.
-
-Você representa o time Porkitos.
-
-Responda apenas assuntos relacionados aos Porkitos.
-
-Se não souber algo,
-oriente o usuário a entrar em contato com a equipe.
-`;
-
-    const result =
-      await model.generateContent(
-        contexto + "\n\nPergunta: " + pergunta
-      );
-
-    const resposta =
-      result.response.text();
+    const result = await model.generateContent(
+      pergunta
+    );
 
     res.status(200).json({
-      resposta
+      resposta: result.response.text()
     });
 
   } catch (error) {
